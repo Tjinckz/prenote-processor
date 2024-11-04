@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prenote processor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Prenote processor <span class="watermark">BETA</span></h1>
+        <select name="processor-type" class="processor-select">
+            <option value="cookshop">Cookshop</option>
+        </select>
+        <div class="upload-form">
+            <form method="post" action="{{ url_for('process_excel') }}" enctype="multipart/form-data">
+                <div class="file-input-wrapper">
+                    <input type="file" name="file" accept=".xlsx" id="file-input">
+                    <label for="file-input" class="file-label">Upload file</label>
+                    <span class="file-name">No file chosen</span>
+                </div>
+                <button type="submit" class="submit-btn">Process file</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        // Simple JavaScript to show selected filename
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name || 'No file chosen';
+            document.querySelector('.file-name').textContent = fileName;
+        });
+    </script>
+</body>
+</html>
