@@ -6,8 +6,11 @@ from openpyxl.utils import get_column_letter
 import os
 import pandas as pd
 from werkzeug.utils import secure_filename
-from PIL import Image
-import subprocess
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import landscape, letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 
 app = Flask(__name__)
 
@@ -40,6 +43,7 @@ def process_excel():
     filename = secure_filename(file.filename)
     input_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     output_path = os.path.join(app.config['UPLOAD_FOLDER'], f'processed_{filename}')
+    pdf_path = os.path.join(app.config['UPLOAD_FOLDER'], 'output.pdf')
     file.save(input_path)
     
     # Read Excel file with pandas, specifically from 'Data' sheet
@@ -195,17 +199,42 @@ def process_excel():
     data2.page_margins.footer = 0.25
     # Save the modified workbook
     workbook.save(output_path)
-
-    # First convert Excel to PDF using libreoffice
-    pdf_path = os.path.join(app.config['UPLOAD_FOLDER'], 'output.pdf')
-    subprocess.run(['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', 
-                   app.config['UPLOAD_FOLDER'], output_path])
-
-    # Then convert PDF to JPG using ImageMagick
-    jpg_path = os.path.join(app.config['UPLOAD_FOLDER'], 'output.jpg')
-    subprocess.run(['convert', '-density', '300', pdf_path, '-quality', '100', jpg_path])
-
-    return send_file(jpg_path, as_attachment=True, download_name='processed_report.jpg')
+    
+    # Register Libre Barcode 128 Text font for PDF
+    font_path = './LibreBarcode128Text-Regular.ttf'
+    pdfmetrics.registerFont(TTFont('LibreBarcode128Text', font_path))
+    
+    # Convert to PDF using reportlab
+    doc = SimpleDocTemplate(pdf_path, pagesize=landscape(letter))
+    elements = []
+    
+    # Get data from Data2 sheet
+    data = []
+    for row in data2.rows:
+        data.append([cell.value for cell in row])
+    
+    # Create table
+    table = Table(data, rowHeights=[40] * len(data))  # Set uniform row height of 40 points
+    table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        # Apply Libre Barcode font to first column (ARTNO)
+        ('FONTNAME', (0, 1), (0, -1), 'LibreBarcode128Text'),
+        ('FONTSIZE', (0, 1), (0, -1), 22),
+        ('VALIGN', (0, 1), (0, -1), 'TOP'),  # Vertically align ARTNO column to top
+        ('VALIGN', (1, 0), (-1, -1), 'MIDDLE'),  # Center align all other cells vertically
+    ]))
+    
+    elements.append(table)
+    doc.build(elements)
+    
+    # Return the PDF file
+    return send_file(pdf_path, as_attachment=True, download_name='processed_report.pdf')
 
 if __name__ == '__main__':
     app.run(debug=True)
