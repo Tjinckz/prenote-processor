@@ -62,8 +62,8 @@ def process_excel():
     df = df.sort_values('SLID_P')
 
     # Pad zzzzzz column values with leading zeros to length 8
-    if '"zzzzzz' in df.columns:
-        df['"zzzzzz'] = df['"zzzzzz'].astype(str).apply(lambda x: x.zfill(8))
+    if 'ARTNO' in df.columns:
+        df['ARTNO'] = df['ARTNO'].astype(str).apply(lambda x: x.zfill(8))
     
     # Save filtered data to new workbook
     workbook = load_workbook(input_path)
@@ -134,7 +134,7 @@ def process_excel():
     data2 = workbook.create_sheet("Data2")
     
     # Define the columns to copy
-    columns_to_copy = ['"zzzzzz', 'ARTNAME', 'HFB', 'PA', 'SLID_P', 'SLID_H', 'TO_LOC', 'MOVED_QTY', 'DEL_TYPE']
+    columns_to_copy = ['ARTNO', 'ARTNAME', 'HFB', 'PA', 'SLID_P', 'SLID_H', 'TO_LOC', 'MOVED_QTY', 'DEL_TYPE']
     
     # Find column indices in source sheet
     source_cols = []
@@ -150,7 +150,7 @@ def process_excel():
         dest_header.value = src_header.value
         
         # Set Calibri font for "zzzzzz" header
-        if dest_header.value == '"zzzzzz':
+        if dest_header.value == 'ARTNO':
             dest_header.font = Font(name='Calibri')
         else:
             dest_header.font = copy(src_header.font)
