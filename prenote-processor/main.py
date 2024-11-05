@@ -226,7 +226,8 @@ def process_excel():
         # Apply Libre Barcode font to first column (ARTNO)
         ('FONTNAME', (0, 1), (0, -1), 'LibreBarcode128Text'),
         ('FONTSIZE', (0, 1), (0, -1), 22),
-        ('VALIGN', (0, 1), (0, -1), 'TOP'),  # Vertically align ARTNO column to top
+        ('VALIGN', (0, 0), (0, 0), 'MIDDLE'),  # Vertically align first cell to middle
+        ('VALIGN', (0, 1), (0, -1), 'TOP'),  # Vertically align rest of ARTNO column to top
         ('VALIGN', (1, 0), (-1, -1), 'MIDDLE'),  # Center align all other cells vertically
     ]))
     
