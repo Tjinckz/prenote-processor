@@ -214,7 +214,16 @@ def process_excel():
         data.append([cell.value for cell in row])
     
     # Create table
-    table = Table(data, rowHeights=[40] * len(data))  # Set uniform row height of 40 points
+    # Sort data based on HFB, PA and SLID_H columns
+    headers = data[0]
+    hfb_idx = headers.index('HFB')
+    pa_idx = headers.index('PA')
+    slid_h_idx = headers.index('SLID_H')
+    
+    sorted_data = [data[0]]  # Keep headers as first row
+    sorted_data.extend(sorted(data[1:], key=lambda x: (str(x[hfb_idx]), str(x[pa_idx]), str(x[slid_h_idx]))))
+    
+    table = Table(sorted_data, rowHeights=[40] * len(sorted_data))  # Set uniform row height of 40 points
     table.setStyle(TableStyle([
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
