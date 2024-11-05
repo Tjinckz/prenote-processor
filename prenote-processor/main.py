@@ -6,6 +6,7 @@ from openpyxl.utils import get_column_letter
 import os
 import pandas as pd
 from werkzeug.utils import secure_filename
+from xlsx2pdf import Converter
 
 app = Flask(__name__)
 
@@ -191,11 +192,16 @@ def process_excel():
     data2.page_margins.bottom = 0.25
     data2.page_margins.header = 0.25
     data2.page_margins.footer = 0.25
-    # Save the modified workbook
-    workbook.save(output_path)
+    # Create a temporary PDF file path
+    pdf_output_path = output_path.replace('.xlsx', '.pdf')
     
-    # Return the processed file
-    return send_file(output_path, as_attachment=True, download_name=f'processed_{filename}')
+    # Convert Excel to PDF using xlsx2pdf
+    converter = Converter(output_path)
+    converter.convert(pdf_output_path)
+    
+    # Return the processed PDF file
+    return send_file(pdf_output_path, as_attachment=True, 
+                    download_name=f'processed_{filename.replace(".xlsx", ".pdf")}')
 
 if __name__ == '__main__':
     app.run(debug=True)
