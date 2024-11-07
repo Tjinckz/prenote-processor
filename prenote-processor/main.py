@@ -88,9 +88,21 @@ def process_excel():
     for col in columns_to_hide:
         col_letter = col
         sheet.column_dimensions[col_letter].hidden = True
-    
+    # Add asterisks to ARTNO column values
+    artno_col = None
+    for col in range(1, sheet.max_column + 1):
+        if sheet.cell(row=1, column=col).value == 'ARTNO':
+            artno_col = col
+            break
+            
+    if artno_col:
+        for row in range(2, sheet.max_row + 1):  # Start from row 2 to skip header
+            cell = sheet.cell(row=row, column=artno_col)
+            if cell.value:  # Only modify if cell has a value
+                cell.value = f'*{str(cell.value)}*'
+                
     # Change the font and size
-    barcode_font = Font(name="Libre Barcode 128 Text", size=22)
+    barcode_font = Font(name="Libre Barcode 39 Text", size=40)
     center_alignment = Alignment(horizontal="center", vertical="center")
     
     # Apply center alignment to all cells in the sheet
@@ -201,8 +213,8 @@ def process_excel():
     workbook.save(output_path)
     
     # Register Libre Barcode 128 Text font for PDF
-    font_path = './LibreBarcode128Text-Regular.ttf'
-    pdfmetrics.registerFont(TTFont('LibreBarcode128Text', font_path))
+    font_path = './LibreBarcode39Text-Regular.ttf'
+    pdfmetrics.registerFont(TTFont('LibreBarcode39Text', font_path))
     
     # Convert to PDF using reportlab
     doc = SimpleDocTemplate(pdf_path, pagesize=landscape(letter))
@@ -233,7 +245,7 @@ def process_excel():
         ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
         ('FONTSIZE', (0, 1), (-1, -1), 10),
         # Apply Libre Barcode font to first column (ARTNO)
-        ('FONTNAME', (0, 1), (0, -1), 'LibreBarcode128Text'),
+        ('FONTNAME', (0, 1), (0, -1), 'LibreBarcode39Text'),
         ('FONTSIZE', (0, 1), (0, -1), 22),
         ('VALIGN', (0, 0), (0, 0), 'MIDDLE'),  # Vertically align first cell to middle
         ('VALIGN', (0, 1), (0, -1), 'TOP'),  # Vertically align rest of ARTNO column to top
